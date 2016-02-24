@@ -1,0 +1,22 @@
+{
+  "name": "histograph-db-graphmalizer",
+  "version": "0.0.5",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "standard"
+  },
+  "dependencies": {
+    "fuzzy-dates": "histograph/fuzzy-dates",
+    "graphmalizer-core": "graphmalizer/graphmalizer-core",
+    "highland": "^2.6.0",
+    "histograph-config": "nypl-spacetime/histograph-config",
+    "histograph-schemas": "nypl-spacetime/histograph-schemas",
+    "histograph-uri-normalizer": "histograph/uri-normalizer"
+  },
+  "devDependencies": {
+    "standard": "^6.0.7"
+  },
+  "author": "Bert Spaan",
+  "license": "MIT"
+}
