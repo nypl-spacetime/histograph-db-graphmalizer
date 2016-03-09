@@ -7,12 +7,10 @@
     "test": "standard"
   },
   "dependencies": {
-    "fuzzy-dates": "histograph/fuzzy-dates",
     "graphmalizer-core": "graphmalizer/graphmalizer-core",
     "highland": "^2.6.0",
     "histograph-config": "nypl-spacetime/histograph-config",
-    "histograph-schemas": "nypl-spacetime/histograph-schemas",
-    "histograph-uri-normalizer": "histograph/uri-normalizer"
+    "histograph-schemas": "nypl-spacetime/histograph-schemas"
   },
   "devDependencies": {
     "standard": "^6.0.7"

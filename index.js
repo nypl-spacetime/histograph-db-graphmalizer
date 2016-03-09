@@ -2,15 +2,13 @@ var H = require('highland')
 var Graphmalizer = require('graphmalizer-core')
 var config = require('histograph-config')
 var schemas = require('histograph-schemas')
-var normalize = require('histograph-uri-normalizer').normalize
-var fuzzyDates = require('fuzzy-dates')
 
 var neo4jAuth
 if (config.neo4j.user && config.neo4j.password) {
   neo4jAuth = config.neo4j.user + ':' + config.neo4j.password
 }
 
-var conf = {
+var graphmalizerConfig = {
   types: schemas.graphmalizer,
   Neo4J: {
     hostname: config.neo4j.host,
@@ -21,10 +19,10 @@ var conf = {
   batchTimeout: config.core.batchTimeout
 }
 
-var graphmalizer = new Graphmalizer(conf)
+var graphmalizer = new Graphmalizer(graphmalizerConfig)
 
 var ACTION_MAP = {
-  add: 'add',
+  create: 'add',
   update: 'add',
   delete: 'remove'
 }
@@ -33,69 +31,37 @@ function getUnixTime (date) {
   return new Date(date).getTime() / 1000
 }
 
-// when passed an object, every field that contains an object
-// is converted into a JSON-string (*mutates in place*)
-function stringifyObjectFields (obj) {
-  // convert objects to JSONified strings
-  var d = JSON.parse(JSON.stringify(obj))
+function toGraphmalizer (message) {
+  var node = message.payload
 
-  if (typeof (d) === 'object') {
-    Object.keys(d).forEach(function (k) {
-      var v = d[k]
+  // dataset is a meta attribute that we want copied into the 'data' attribute
+  node.dataset = message.meta.dataset
 
-      if (v.constructor === Object) {
-        d[k] = JSON.stringify(v)
-      }
-    })
+  // Add UNIX timestamps
+  if (node.validSince) {
+    node.validSinceTimestamp = getUnixTime(node.validSince[0])
   }
 
-  return d
-}
-
-function toGraphmalizer (msg) {
-  function norm (x) {
-    if (x) {
-      return normalize(x, msg.dataset)
-    }
-
-    return undefined
-  }
-
-  var d = msg.data || {}
-
-  // dataset is a top-level attribute that we want copied into the 'data' attribute
-  d.dataset = msg.dataset
-
-  // Parse fuzzy dates to arrays using fuzzy-dates module
-  if (d.validSince) {
-    d.validSince = fuzzyDates.convert(d.validSince)
-
-    // Add timestamp
-    // TODO: find more structured way to add extra values/fields
-    //   to Graphmalizer (and Neo4j afterwards) - API needs to remove
-    //   those fields later
-    d.validSinceTimestamp = getUnixTime(d.validSince[0])
-  }
-
-  if (d.validUntil) {
-    d.validUntil = fuzzyDates.convert(d.validUntil)
-
-    // Add timestamp
-    d.validUntilTimestamp = getUnixTime(d.validUntil[1])
+  if (node.validUntil) {
+    node.validUntilTimestamp = getUnixTime(node.validUntil[1])
   }
 
   return {
-    operation: ACTION_MAP[msg.action],
-    dataset: d.dataset,
-    type: d.type,
+    operation: ACTION_MAP[message.action],
+    dataset: node.dataset,
+    type: node.type,
 
     // nodes are identified with IDs or URIs, we don't care
-    id: norm(d.id || d.uri),
+    id: node.id,
+    source: node.from,
+    target: node.to,
 
-    // normalize source/target id's
-    source: norm(d.from),
-    target: norm(d.to),
-    data: stringifyObjectFields(d)
+    // Only pass name and dates to Graphmalizer
+    data: {
+      name: node.name,
+      validSince: node.validSinceTimestamp,
+      validUntil: node.validUntilTimestamp
+    }
   }
 }
 
@@ -106,7 +72,10 @@ function logError (err) {
 module.exports.fromStream = function (stream) {
   var graphmalizerStream = H(stream)
     .errors(logError)
+    .filter((message) => message.type === 'pit' || message.type === 'relation')
     .map(toGraphmalizer)
+    .errors(logError)
 
-  graphmalizer.register(graphmalizerStream).done(() => {})
+  graphmalizer.register(graphmalizerStream)
+    .done(() => {})
 }
