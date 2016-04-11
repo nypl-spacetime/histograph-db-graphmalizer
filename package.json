@@ -1,5 +1,5 @@
 {
-  "name": "histograph-db-graphmalizer",
+  "name": "spacetime-db-graphmalizer",
   "version": "0.0.5",
   "description": "",
   "main": "index.js",
@@ -9,8 +9,8 @@
   "dependencies": {
     "graphmalizer-core": "graphmalizer/graphmalizer-core",
     "highland": "^2.6.0",
-    "histograph-config": "nypl-spacetime/histograph-config",
-    "histograph-schemas": "nypl-spacetime/histograph-schemas"
+    "spacetime-config": "nypl-spacetime/spacetime-config",
+    "spacetime-schemas": "nypl-spacetime/spacetime-schemas"
   },
   "devDependencies": {
     "standard": "^6.0.7"

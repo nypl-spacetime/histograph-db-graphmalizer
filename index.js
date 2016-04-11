@@ -1,7 +1,9 @@
+'use strict'
+
 var H = require('highland')
 var Graphmalizer = require('graphmalizer-core')
-var config = require('histograph-config')
-var schemas = require('histograph-schemas')
+var config = require('spacetime-config')
+var schemas = require('spacetime-schemas')
 
 var neo4jAuth
 if (config.neo4j.user && config.neo4j.password) {
@@ -29,6 +31,10 @@ var ACTION_MAP = {
 
 function getUnixTime (date) {
   return new Date(date).getTime() / 1000
+}
+
+module.exports.initialize = function () {
+  // TODO: create unique index!
 }
 
 function toGraphmalizer (message) {
@@ -69,13 +75,33 @@ function logError (err) {
   console.error(err.stack || err)
 }
 
-module.exports.fromStream = function (stream) {
+// TODO: implement bulk function!!!
+// module.exports.bulk = function (messages, callback) {
+//   var done = false
+//   var stream = H(messages)
+//
+//   // TODO: this is NOT the right way to do this, but don't know better solution...
+//   fromStream(stream)
+//     .errors(callback)
+//     .append(H.nil)
+//     .each(() => {
+//       if (!done) {
+//         callback()
+//       }
+//       done = true
+//     })
+//
+//     // shutdown
+// }
+
+function fromStream (stream) {
   var graphmalizerStream = H(stream)
     .errors(logError)
     .filter((message) => message.type === 'pit' || message.type === 'relation')
     .map(toGraphmalizer)
     .errors(logError)
 
-  graphmalizer.register(graphmalizerStream)
-    .done(() => {})
+  return graphmalizer.register(graphmalizerStream)
 }
+
+module.exports.fromStream = fromStream
