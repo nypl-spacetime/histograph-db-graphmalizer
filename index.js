@@ -76,23 +76,23 @@ function logError (err) {
 }
 
 // TODO: implement bulk function!!!
-// module.exports.bulk = function (messages, callback) {
-//   var done = false
-//   var stream = H(messages)
-//
-//   // TODO: this is NOT the right way to do this, but don't know better solution...
-//   fromStream(stream)
-//     .errors(callback)
-//     .append(H.nil)
-//     .each(() => {
-//       if (!done) {
-//         callback()
-//       }
-//       done = true
-//     })
-//
-//     // shutdown
-// }
+module.exports.bulk = function (messages, callback) {
+  var done = false
+  var stream = H(messages)
+
+  // TODO: this is NOT the right way to do this, but don't know better solution...
+  fromStream(stream)
+    .errors(callback)
+    .append(H.nil)
+    .each(() => {
+      if (!done) {
+        callback()
+      }
+      done = true
+    })
+
+    // TODO: shutdown?!
+}
 
 function fromStream (stream) {
   var graphmalizerStream = H(stream)
