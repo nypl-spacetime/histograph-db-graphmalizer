@@ -65,6 +65,7 @@ function toGraphmalizer (message) {
     // Only pass name and dates to Graphmalizer
     data: {
       name: node.name,
+      type: node.type,
       validSince: node.validSinceTimestamp,
       validUntil: node.validUntilTimestamp
     }

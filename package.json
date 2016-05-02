@@ -1,6 +1,6 @@
 {
   "name": "spacetime-db-graphmalizer",
-  "version": "0.0.5",
+  "version": "0.0.6-alpha",
   "description": "",
   "main": "index.js",
   "scripts": {
